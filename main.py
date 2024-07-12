@@ -1,34 +1,36 @@
 class Interpreter:
     def __init__(self):
         self.stack = []
+        self.environment = {}
 
-    def LOAD_VALUE(self, number):
-        self.stack.append(number);
-
-    def PRINT_ANSWER(self):
+    def STORE_NAME(self, name):
         val = self.stack.pop()
-        print(val)
-    
-    def ADD_TWO_NUMBERS(self):
-        num1 = self.stack.pop()
-        num2 = self.stack.pop()
-        self.stack.append(num1 + num2)
+        self.environment[name] = val
 
-    def run_code(self, what_to_execute):
+    def LOAD_NAME(self, name):
+        val = self.environment[name]
+        self.stack.append(val);
+
+    def parse_argument(self, instruction, argument, what_to_execute):
+        numbers = ["LOAD_VALUE"]
+        names = ["LOAD_NAME", "STORE_NAME"]
+
+        if instruction in numbers:
+            argument = what_to_execute["numbers"][argument]
+        elif instruction in names:
+            argument = what_to_execute["names"][argument]
+        
+        return argument
+
+    def execute(self, what_to_execute):
         instructions = what_to_execute["instructions"]
-        numbers = what_to_execute["numbers"]
-
         for step in instructions:
-            instruction, argument = step
-
-            if instruction == "LOAD_VALUE":
-                self.LOAD_VALUE(numbers[argument])
-            elif instruction == "ADD_TWO_NUMBERS":
-                self.ADD_TWO_NUMBERS()
-            elif instruction == "PRINT_ANSWER":
-                self.PRINT_ANSWER()
-
-
+            instruction, argument = self.parse_argument(instruction, argument, what_to_execute)
+            bytecode_method = getattr(self, instruction)
+            if argument:
+                bytecode_method(argument)
+            else:
+                bytecode_method()
 
 if __name__ == "__main__":
     what_to_execute = {
