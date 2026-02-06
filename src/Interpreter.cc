@@ -5,13 +5,12 @@
 #include "Interpreter.h"
 #include "OpCode.h"
 
-void Interpreter::LOAD_VALUE(int number) {
-    stack.push(number);
+void Interpreter::LOAD_VALUE(int value) {
+    stack.push(value);
 }
 
 void Interpreter::PRINT_ANSWER() {
     int answer = stack.top();
-    stack.pop();
     std::cout << answer << "\n";
 }
 
@@ -26,14 +25,19 @@ void Interpreter::ADD_TWO_VALUES() {
 
 void Interpreter::run_code(CodeObject code_object) {
     std::vector<uint8_t> co_code = code_object.co_code;
+    std::vector<int> co_consts = code_object.co_consts;
     
     for (size_t i = 0; i < co_code.size(); i += 2) {
         OpCode opcode = static_cast<OpCode>(co_code[i]);
         uint8_t arg = co_code[i+1];
+        if (arg >= co_consts.size()) {
+            continue;
+        }
+        int value = co_consts[arg];
         
         switch (opcode) {
             case OpCode::LOAD_VALUE:
-                LOAD_VALUE(arg);
+                LOAD_VALUE(value);
                 break;
             case OpCode::PRINT_ANSWER:
                 PRINT_ANSWER();
